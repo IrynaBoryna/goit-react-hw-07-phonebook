@@ -2,16 +2,16 @@ import { useState } from 'react';
 import { nanoid } from 'nanoid';
 import css from './contactForm.module.css';
 import PropTypes from 'prop-types';
-import { useDispatch } from 'react-redux';
-// import { addContacts } from '../../redux/contactsSlice';
+import { useDispatch, useSelector } from 'react-redux';
 import { addContact } from 'redux/operations';
+import { selectContacts } from 'redux/selectors';
 
 export function ContactForm() {
   const dispatch = useDispatch();
+  const contacts = useSelector(selectContacts);
 
   const [name, setName] = useState('');
-  const [number, setNumber] = useState('');
-  const [id, setId] = useState('');
+  const [phone, setPhone] = useState('');
 
   const handleInputChange = evt => {
     const { name, value } = evt.target;
@@ -19,25 +19,27 @@ export function ContactForm() {
       case 'name':
         setName(value);
         break;
-      case 'number':
-        setNumber(value);
+      case 'phone':
+        setPhone(value);
         break;
       default:
         return;
     }
-    setId(nanoid());
   };
 
   const handleSubmit = evt => {
     evt.preventDefault();
-    dispatch(addContact({ name, number, id }));
+    if (contacts.some(contact => contact.name === name)) {
+      alert(` ${name} is already in contacts`);
+      return resetForm();
+    }
+    dispatch(addContact({ name, phone }));
     resetForm();
   };
 
   const resetForm = () => {
     setName('');
-    setNumber('');
-    setId('');
+    setPhone('');
   };
   return (
     <>
@@ -46,7 +48,6 @@ export function ContactForm() {
           <p className={css.textLabel}>Name</p>
           <input
             className={css.inputField}
-            // id={nanoid()}
             type="text"
             name="name"
             value={name}
@@ -57,13 +58,12 @@ export function ContactForm() {
           />
         </label>
         <label className={css.label} htmlFor={nanoid()}>
-          <p className={css.textLabel}>Number</p>
+          <p className={css.textLabel}>Phone</p>
           <input
             className={css.inputField}
-            // id={nanoid()}
             type="tel"
-            name="number"
-            value={number}
+            name="phone"
+            value={phone}
             pattern="\+?\d{1,4}?[-.\s]?\(?\d{1,3}?\)?[-.\s]?\d{1,4}[-.\s]?\d{1,4}[-.\s]?\d{1,9}"
             title="Phone number must be digits and can contain spaces, dashes, parentheses and can start with +"
             required
